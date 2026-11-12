@@ -1,5 +1,4 @@
 import SwiftUI
-
 @Observable
 final class ActivityStore {
     private(set) var items: [ActivityItem] = []
@@ -7,11 +6,14 @@ final class ActivityStore {
 
     func load() async {
         loadCount += 1
-
-        // Three independent requests, awaited one after another.
-        let feedData = try? await fetchFeed()
-        let mentionData = try? await fetchMentions()
-        let relatedData = try? await fetchRelated()
+        // Three independent requests, started together.
+        async let feed = try? fetchFeed()
+        async let mentions = try? fetchMentions()
+        async let related = try? fetchRelated()
+        
+        if Task.isCancelled { return }
+        
+        let (feedData, mentionData, relatedData) = await (feed, mentions, related)
 
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
@@ -39,3 +41,5 @@ final class ActivityStore {
         return FeedCache.makeData(count: 500)
     }
 }
+
+
