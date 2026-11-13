@@ -11,7 +11,7 @@ final class TasksStore {
     // Launch-time work. Ignored by Observation: the UI never reads these.
     @ObservationIgnored var searchIndex: SearchIndex
     @ObservationIgnored var cachedFeed: [ActivityItem] = []
-    @ObservationIgnored var avatarCache: [UUID: UIImage] = [:]
+    var avatarCache: [UUID: UIImage] = [:]
 
     init() {
         let priya = Teammate(name: "Priya Raman")
@@ -80,7 +80,6 @@ final class TasksStore {
         // Launch work, all on the main thread, all before the first frame.
         searchIndex = SearchIndex(tasks: seeded)
         cachedFeed = FeedCache.decodeCachedFeed()
-        warmAvatarCache()
     }
 
     // MARK: - Seed data
@@ -111,19 +110,34 @@ final class TasksStore {
 
     // MARK: - Launch-time work
 
-    func rebuildSearchIndex() {
-        searchIndex = SearchIndex(tasks: tasks)
+    func rebuildSearchIndex() async {
+        let snapshot = tasks
+        let index = await Task.detached {
+            SearchIndex(tasks: snapshot)
+        }.value
+        searchIndex = index
     }
 
-    func warmAvatarCache() {
-        for teammate in teammates {
-            let first = teammate.name.split(separator: " ").first.map(String.init) ?? ""
-            let fileName = "avatar-" + first.lowercased()
-            guard let url = Bundle.main.url(forResource: fileName, withExtension: "jpg"),
-                  let image = UIImage(contentsOfFile: url.path()) else { continue }
-            // Force the full decode now. This is what makes the images expensive.
-            avatarCache[teammate.id] = image.preparingForDisplay() ?? image
+    func loadAvatars() async {
+        var avatars: [UUID: UIImage] = [:]
+        await withTaskGroup(of: (UUID, UIImage?).self) { group in
+            for teammate in teammates {
+                group.addTask {
+                    (teammate.id, Self.decodedAvatar(for: teammate))
+                }
+            }
+            for await (id, image) in group {
+                if let image { avatars[id] = image }
+            }
         }
+        avatarCache = avatars
+    }
+    
+    nonisolated private static func decodedAvatar(for teammate: Teammate) -> UIImage? {
+        let first = teammate.name.split(separator: " ").first.map(String.init) ?? ""
+        guard let url = Bundle.main.url(forResource: "avatar-" + first.lowercased(), withExtension: "jpg"),
+              let image = UIImage(contentsOfFile: url.path()) else { return nil }
+        return image.preparingForDisplay() ?? image
     }
 
     // MARK: - Queries

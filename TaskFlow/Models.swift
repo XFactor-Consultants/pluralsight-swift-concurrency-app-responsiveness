@@ -3,7 +3,7 @@ import Foundation
 // Named TaskItem, not Task, to avoid colliding with Swift Concurrency's `Task` type.
 // This matters later in the series (Swift Concurrency course) and prevents confusing
 // compiler errors the moment anyone writes `Task { ... }` in this codebase.
-struct TaskItem: Identifiable, Equatable, Hashable {
+nonisolated struct TaskItem: Identifiable, Equatable, Hashable, Sendable {
     enum Priority: Int, CaseIterable, Comparable, Identifiable, Hashable {
         case low = 0
         case medium = 1
@@ -80,7 +80,7 @@ struct TaskItem: Identifiable, Equatable, Hashable {
     }
 }
 
-struct Teammate: Identifiable, Equatable, Hashable {
+nonisolated struct Teammate: Identifiable, Equatable, Hashable, Sendable {
     let id: UUID
     var name: String
 

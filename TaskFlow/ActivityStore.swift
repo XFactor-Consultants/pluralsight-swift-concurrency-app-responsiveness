@@ -9,9 +9,10 @@ final class ActivityStore {
         loadCount += 1
 
         // Three independent requests, awaited one after another.
-        let feedData = try? await fetchFeed()
-        let mentionData = try? await fetchMentions()
-        let relatedData = try? await fetchRelated()
+        async let feed = try? fetchFeed()
+        async let mentions = try? fetchMentions()
+        async let related = try? fetchRelated()
+        let (feedData, mentionData, relatedData) = await (feed, mentions, related)
 
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
