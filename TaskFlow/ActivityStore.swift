@@ -1,5 +1,4 @@
 import SwiftUI
-
 @Observable
 final class ActivityStore {
     private(set) var items: [ActivityItem] = []
@@ -40,3 +39,5 @@ final class ActivityStore {
         return FeedCache.makeData(count: 500)
     }
 }
+
+

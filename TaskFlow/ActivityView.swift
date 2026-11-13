@@ -23,11 +23,6 @@ struct ActivityView: View {
             .task {
                 await store.load()
             }
-            .onAppear {
-                Task {
-                    await store.load()
-                }
-            }
         }
     }
 }
