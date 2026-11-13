@@ -15,6 +15,8 @@ final class SyncEngine {
     
     private var syncTask: Task<Void, Never>?
     private(set) var lastChecksum = 0
+    private var continuation: AsyncStream<Date>.Continuation?
+    
     
     func startSyncLoop() {
         syncTask?.cancel()
@@ -29,6 +31,18 @@ final class SyncEngine {
     
     func apply(_ checksum: Int) {
         lastChecksum = checksum
+        continuation?.yield(.now)
+    }
+    
+    func events() -> AsyncStream<Date> {
+        AsyncStream { continuation in
+            self.continuation = continuation
+            continuation.onTermination = { [weak self] _ in
+                Task { @MainActor in
+                    self?.continuation = nil
+                }
+            }
+        }
     }
     
     nonisolated static func performSync() -> Int {
