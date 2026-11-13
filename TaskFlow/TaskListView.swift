@@ -90,6 +90,13 @@ struct TaskRowView: View {
                             .foregroundStyle(task.isOverdue ? .red : .secondary)
                     }
                     if let assignee = task.assignee {
+                        if let image = tasksStore.avatarCache[assignee.id] {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 20, height: 20)
+                                .clipShape(Circle())
+                        }
                         Text(assignee.initials)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
