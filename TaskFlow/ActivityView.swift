@@ -23,6 +23,9 @@ struct ActivityView: View {
             .task {
                 await store.load()
             }
+            .refreshable {
+                await store.load()
+            }
         }
     }
 }

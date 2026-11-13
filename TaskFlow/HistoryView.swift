@@ -26,8 +26,9 @@ struct HistoryView: View {
                 }
                 .pickerStyle(.menu)
             }
-            .onAppear { loadRows() }
-            .onChange(of: selectedName) { loadRows() }
+            .task(id: selectedName) {
+                loadRows()
+            }
         }
     }
 

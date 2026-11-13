@@ -39,8 +39,10 @@ struct RootView: View {
                 Task { await tasksStore.rebuildSearchIndex() }
             }
         }
-        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didReceiveMemoryWarningNotification)) { _ in
-            tasksStore.avatarCache.removeAll()
+        .task {
+            for await _ in NotificationCenter.default.notifications(named: UIApplication.didReceiveMemoryWarningNotification) {
+                tasksStore.avatarCache.removeAll()
+            }
         }
     }
 }
