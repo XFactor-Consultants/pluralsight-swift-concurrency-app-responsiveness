@@ -22,12 +22,21 @@ struct RootView: View {
         }
         .task {
             SyncEngine.shared.startSyncLoop()
+            await tasksStore.loadAvatars()
+        }
+        .task {
+            let cache = AvatarCache()
+            let id = UUID()
+            async let first = cache.avatar(for: id)
+            async let second = cache.avatar(for: id)
+            _ = await (first, second)
+            print("Loads: \(await cache.loadCount)")
         }
         // Rebuilds the index every time the app becomes active, including at launch.
         // This is the second "Build Search Index" before the first frame.
         .onChange(of: scenePhase, initial: true) { _, newPhase in
             if newPhase == .active {
-                tasksStore.rebuildSearchIndex()
+                Task { await tasksStore.rebuildSearchIndex() }
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didReceiveMemoryWarningNotification)) { _ in

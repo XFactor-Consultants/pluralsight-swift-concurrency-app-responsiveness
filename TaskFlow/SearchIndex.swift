@@ -1,6 +1,6 @@
 import Foundation
 
-struct SearchIndex {
+nonisolated struct SearchIndex: Sendable  {
     private(set) var postings: [String: [UUID]] = [:]
 
     init(tasks: [TaskItem]) {
