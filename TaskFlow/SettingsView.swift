@@ -27,6 +27,10 @@ struct SettingsView: View {
                     }
                 }
 
+                Section("Diagnostics") {
+                    NavigationLink("Diagnostics") { DiagnosticsView() }
+                }
+
                 Section("About") {
                     LabeledContent("Version", value: "1.0 (canonical build)")
                 }
